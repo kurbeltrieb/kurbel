@@ -174,7 +174,7 @@ Möchten wir einen Kurbeltrieb anhand der Gliedlängen und eines vorgegeben Kurb
 
 Die Punkte D und C können direkt berechnet werden. Punkt D liegt im Ursprung und Punkt C ist mit der Länge von Glied d auf der Horizontalen  weit entfernt. Punkt A wird aus der Gliedlänge a und dem Winkel Phi berechnet. Die Koordinaten von Punkt B müssen nun aufwändiger berechnet werden. Wir berechnen Punkt B aus der Addition von den Vektoren rA und rb. rA kennen wir bereits um nun rb zu erhalten bestimmen wir zuerst einen Hilfsvektor von Punkt A zu Punkt C. Diesen drehen wir dann um den Punkt A auf den Vektor rb. Anschließend ändern wir die Länge des Hilfsvektors auf die Gliedlänge von b und erhalten den Gliedvektor rb. Der Ortsvektor von B ergibt sich nun aus der Addition von rA und rb. Damit kennen wir alle Koordinaten der vier Gelenkpunkte und können wie im vorherigen Kapitel das Viergelenk zeichnen.
 
-[![Berechnung Kurbeltrieb](http://img.youtube.com/vi/9OdfrWXACCY/0.jpg)](http://www.youtube.com/watch?v=)
+[![Berechnung Kurbeltrieb](http://img.youtube.com/vi/hoCllsp0V8o/0.jpg)](http://www.youtube.com/watch?v=hoCllsp0V8o)
 
 Der folgende Code zeigt nun wie sich diese Berechnung in JavaScript ermöglichen lässt.
 
@@ -294,7 +294,7 @@ Wir erweitern unsere Koppel um 2 Parameter. Diese Parameter nennen wir ```pb``` 
 
 Um die Koppel zu erweitern benötigen wir nun eine senkrechte Linie vom Glied b zum Punkt P und einen Kreis im Punkt P. Die mathematischen Schritte erkläre ich dazu in folgendem Video.
 
-VIDEO KOPPEL
+[![Berechnung Koppel](http://img.youtube.com/vi/1fJAnVQg3TM/0.jpg)](http://www.youtube.com/watch?v=1fJAnVQg3TM)
 
 Unsere Funktion ```render(time)``` müssen wir nun wie folgt ändern. Zuerst berechnen wir die Punkte BP und P. Anschließend erweitern wir unseren Kurbeltrieb um eine Linie von Punkt A über Punkt PB zu Punkt P und einen Kreis im Punkt P.
 
@@ -589,7 +589,7 @@ Anschließend zeichnen wir den Polygonzug, dazu müssen wir jeden Punkt der Gang
 
 ## 14. Gangpolbahn animieren
 
-![Koppelkurve interaktiv](./img/14_gangpolbahnanimieren.gif "Koppelkurve interaktiv" )
+![Koppelkurve interaktiv](./img/14_gangpolbahnzeichnen.gif "Koppelkurve interaktiv" )
 
 Möchten wir nun die Gangpolbahn animieren müssen wir nur wieder den Winkel ```phi``` in Abhängigkeit von der Zeit berechnen und die Animation durch Auskommentieren von ```requestAnimationFrame(render);``` wieder starten.
 

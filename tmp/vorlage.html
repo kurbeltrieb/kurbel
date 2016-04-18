@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html >
+  <head>
+    <meta charset="UTF-8">
+    <title>g2 - Vorlage</title>
+  </head>
+
+  <body>
+    <canvas id="c" width="601" height="401"></canvas> // Canvas-Elemente
+    <script src='../g2.js'></script> // g2-Bibliothek
+
+    <script>
+      var ctx = document.getElementById("c").getContext("2d");
+
+      g = g2()	// g2-Grundelement
+          .cartesian() // Kartesische Koordinaten
+          .pan(150,100) // Basis-Element
+          .grid(); // Grid erstellen
+
+      g.exe(ctx);
+    </script>
+  </body>
+</html>

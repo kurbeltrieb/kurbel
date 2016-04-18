@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html >
+  <head>
+    <meta charset="UTF-8">
+    <title>g2 - Momantanpol zeichnen</title>
+  </head>
+
+  <body>
+
+    <canvas id="c" width="601" height="401"></canvas>
+    <script src='../g2.js'></script>
+
+      <script>
+        var ctx = document.getElementById("c").getContext("2d");
+        // Eigenschaften des Kurbeltriebs
+        var a=50, b=220, c=120, d=180, phi=120/180*Math.PI, n=0.5;
+        bar = g2(); // Kurbeltrieb
+        moment = g2(); // Momentanpol
+        g = g2() // Basis-Element
+          .clr() // Lösche alte Elemente
+          .cartesian() // Kartesische Koordinaten
+          .grid()  // Gitter erzeugen
+          .use(moment) // moment-Element nutzen
+          .use(bar) // bar-Element nutzen
+          .pan(500,500) // Verschiebung des Ursprungs
+          .zoom(0.5,0,0); // Zoom herauss
+
+        function calcMoment() { // Berechnung des Momentanpol
+          lambdaC = d/(d-rB.x+rB.y/rA.y*rA.x);
+          rlC = {x: d+lambdaC*(rB.x-d), y: lambdaC*rB.y}; // Schnittpunkt
+          lambdaA = lambdaC*rB.y/rA.y;
+          rlA = {x: lambdaA*rA.x,y: lambdaA*rA.y}; // Schnittpunkt
+        }
+
+        function calc(phi,pb,ph) { // Berechung der Punkte
+          // Berechnung der Orsvektoren
+          rA = {x: a*Math.cos(phi), y: a*Math.sin(phi)}; // Berechnung des Orsvektor rA
+          rC = {x: d, y: 0}; // Berechnung des Orsvektor rC
+          rD = {x: 0, y: 0}; // Berechnung des Orsvektor rD
+          rAC = {x: d-rA.x, y: -rA.y}; // Berechnung des Hilfsvektor rD
+          lenrAC = Math.hypot(rAC.x,rAC.y);
+          cg = (b*b+lenrAC*lenrAC-c*c)/(2*b*lenrAC); // cos gamma
+          sg = Math.sqrt(1-cg*cg); // sin gamma
+          rb = {x: b/lenrAC*(rAC.x*cg-rAC.y*sg),
+            y: b/lenrAC*(rAC.x*sg+rAC.y*cg)}; // Gliedvektor von GLied b
+          rB = {x: rA.x+rb.x, y: rA.y+rb.y}; // Ortsvektor zum Punkt B
+
+          // Berechnung von Punkt P
+          lenrs = Math.hypot(pb,ph);
+          s = Math.atan2(ph,pb); // sigma
+          cs = Math.cos(s); // cos sigma
+          ss = Math.sin(s); // sin sigma
+          rp = {x: lenrs/b*(rb.x*cs-rb.y*ss),
+            y: lenrs/b*(rb.x*ss+rb.y*cs)}; // Berechnung von Glied p
+          rbp = {x:((rb.x*rp.x+rb.y*rp.y)/(b*b))*rb.x,
+                 y:((rb.x*rp.x+rb.y*rp.y)/(b*b))*rb.y};
+          rBP = {x:rA.x+rbp.x,y:rA.y+rbp.y};  // Ortsvektor Punkt BP
+          rP = {x: rA.x+rp.x, y: rA.y+rp.y}; // Ortsvektor Punkt P
+        }
+
+        function render(time) {
+          //t = time / 1000; // Zeit in Sek.
+          //phi = 2*Math.PI*t*n
+          calc(phi); // Kurbeltrieb berechnen
+          calcMoment(); // Momentanpol berechnen
+          
+          moment
+            .del() // Lösche vorherige Grafik
+            .style({ls:"#666",fs:"#fee",ld:[12,6],lw:3}) // Style-Eigenschaften
+            .p() // Polygonzug beginnen
+            .m(rA.x,rA.y) // Gege zum Punkt A
+            .l(rlA.x,rlA.y) // Linie zum Schnittpunkt
+            .m(rC.x,rC.y) // Gehe zum Punkt C
+            .l(rlC.x,rlC.y) // Linie zum Schnittpunkt
+            .stroke() // Zeichne Ränder
+            .style({ls:"red",fs:"red",ld:[1],lw:0.1}) // Style-Eigenschaften
+            .cir(rlC.x,rlC.y,10); // roter Kreis im Schnittpunkt
+
+          bar.del()
+            .style({ls:"#666",fs:"#fee",lw:5})
+            .p() // Polygonzug beginnen
+            .m(rD.x,rD.y) // Gehe zum Punkt D
+            .l(rA.x,rA.y) // Linie zum Punkt A
+            .l(rB.x,rB.y) // Linie zum Punkt B
+            .l(rC.x,rC.y) // Linie zum Punkt C
+            .stroke() // Rand zeichnen
+            .cir(rD.x,rD.y,8) // Kreis im Punkt D
+            .cir(rA.x,rA.y,8) // Kreis im Punkt A
+            .cir(rB.x,rB.y,8) // Kreis im Punkt B
+            .cir(rC.x,rC.y,8); // Kreis im Punkt C
+
+            g.exe(ctx); // Erstelle die Grafik
+
+          //requestAnimationFrame(render);
+        }
+
+        requestAnimationFrame(render); // render-Funktion aufrufen
+
+      </script>
+
+
+
+
+  </body>
+</html>

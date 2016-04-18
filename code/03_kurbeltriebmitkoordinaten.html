@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html >
+  <head>
+    <meta charset="UTF-8">
+    <title>g2 - Kurbelschwinge zeichnen</title>
+  </head>
+
+  <body>
+
+    <canvas id="c" width="601" height="401"></canvas>
+    <script src='../g2.js'></script>
+
+      <script>
+        var ctx = document.getElementById("c").getContext("2d");
+
+        bar = g2(); // Kurbeltrieb
+        g = g2()  // Basis-Element
+          .cartesian() // Kartesische Koordinaten
+          .pan(150,100) // Verschiebung des Ursprungs
+          .grid() // Gitter erzeugen
+          .use(bar); // bar-Element nutzen
+
+        // Beispielkoordinaten
+        rA = {x:-25, y:43}; // Koordinaten Punkt A
+        rB = {x:181, y:120}; // Koordinaten Punkt B
+        rC = {x:160, y:0}; // Koordinaten Punkt C
+        rD = {x:0, y:0}; // Koordinaten Punkt D
+
+        bar
+          .style({ls:"#666",fs:"#fee",lw:5,lj:"round"}) // Style-Eigenschaften
+          .p() // Polygonzug beginnen
+          .m(rD.x,rD.y) // Gehe zum Punkt D
+          .l(rA.x,rA.y) // Linie zum Punkt A
+          .l(rB.x,rB.y) // Linie zum Punkt B
+          .l(rC.x,rC.y) // Linie zum Punkt C
+          .stroke() // Rand zeichnen
+          .cir(rD.x,rD.y,8) // Kreis im Punkt D
+          .cir(rA.x,rA.y,8) // Kreis im Punkt A
+          .cir(rB.x,rB.y,8) // Kreis im Punkt B
+          .cir(rC.x,rC.y,8); // Kreis im Punkt C
+
+        g.exe(ctx); // Erstelle die Grafik
+
+      </script>
+  </body>
+</html>

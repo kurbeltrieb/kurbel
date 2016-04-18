@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html >
+  <head>
+    <meta charset="UTF-8">
+    <title>g2 - Koppelkurve animieren</title>
+    <style>canvas { cursor: move;}</style>
+  </head>
+
+  <body>
+
+    <canvas id="c" width="801", height="601" onclick="interactive(event)"></canvas>
+    <script src='../g2.js'></script>
+
+      <script>
+      var ctx = document.getElementById("c").getContext("2d");
+      var canvas = document.getElementById("c");
+      var viewport = ctx.canvas.getBoundingClientRect();
+      // Eigenschaften des Kurbeltriebs
+      var a=50, b=220, c=120, d=180, phi0=120/180*Math.PI;
+      var pb=180, ph=70;
+      var dirty = false; // Hilfselement
+      bar = g2(); // Kurbeltrieb
+      curve = g2(); // Koppelkurve
+      g = g2() // Basis-Element
+        .clr() // Lösche alte Elemente
+        .cartesian() // Kartesische Koordinaten
+        .grid() // Gitter erzeugen
+        .pan(320,200) // Verschiebung des Ursprungs
+        .style({ls:"#000",fs:"#fee",lw:4,lj:"round"}) // Style-Eigenschaften
+        .use(curve) // curve-Element nutzen
+        .use(bar); // bar-Element nutzen
+
+        function calc(phi,pb,ph) { // Berechung der Punkte
+          // Berechnung der Orsvektoren
+          rA = {x: a*Math.cos(phi), y: a*Math.sin(phi)}; // Berechnung des Orsvektor rA
+          rC = {x: d, y: 0}; // Berechnung des Orsvektor rC
+          rD = {x: 0, y: 0}; // Berechnung des Orsvektor rD
+          rAC = {x: d-rA.x, y: -rA.y}; // Berechnung des Hilfsvektor rD
+          lenrAC = Math.hypot(rAC.x,rAC.y);
+          cg = (b*b+lenrAC*lenrAC-c*c)/(2*b*lenrAC); // cos gamma
+          sg = Math.sqrt(1-cg*cg); // sin gamma
+          rb = {x: b/lenrAC*(rAC.x*cg-rAC.y*sg),
+            y: b/lenrAC*(rAC.x*sg+rAC.y*cg)}; // Gliedvektor von GLied b
+          rB = {x: rA.x+rb.x, y: rA.y+rb.y}; // Ortsvektor zum Punkt B
+
+          // Berechnung von Punkt P
+          lenrs = Math.hypot(pb,ph);
+          s = Math.atan2(ph,pb); // sigma
+          cs = Math.cos(s); // cos sigma
+          ss = Math.sin(s); // sin sigma
+          rp = {x: lenrs/b*(rb.x*cs-rb.y*ss),
+            y: lenrs/b*(rb.x*ss+rb.y*cs)}; // Berechnung von Glied p
+          rbp = {x:((rb.x*rp.x+rb.y*rp.y)/(b*b))*rb.x,
+                 y:((rb.x*rp.x+rb.y*rp.y)/(b*b))*rb.y};
+          rBP = {x:rA.x+rbp.x,y:rA.y+rbp.y};  // Ortsvektor Punkt BP
+          rP = {x: rA.x+rp.x, y: rA.y+rp.y}; // Ortsvektor Punkt P
+        }
+
+      function drwCurve(phi0,pb,ph) {
+        curve.p(); // Erstelle Polygonzug
+        // Zeichne Polygonzug zu jedem Winkelgradstellung der Kurbel
+        for (phi=0; phi<360; phi++) {
+          act_phi = phi/180*Math.PI+phi0; // aktuellen Winkel berechnen
+          calc(act_phi,pb,ph); // Punkte zur Winkelgradstellung berechnen
+          curve.l(rP.x,rP.y); // Linie zeichnen
+        }
+        curve.z().stroke(); // Zeichne Ränder
+        bar.cir(rP.x,rP.y,8); // Zeichne Koppelpunkt
+      }
+
+      // Berechnung des Koppelpunktes ins Kartesische System und der dazugehörigen Koppelparameter
+      function calcpbph(x,y) {
+        rp = {x: x-rA.x, y: y-rA.y}; // Umrechung ins kartesische System
+        rpbf = ((rb.x*rp.x)+(rb.y*rp.y))/
+          (Math.hypot(rb.x,rb.y)*Math.hypot(rb.x,rb.y)); // Projektion auf rb
+          rpb = {x: rpbf*(rb.x), y: rpbf*(rb.y)}; // Projektion horizontal auf rb
+        rhbf = ((-rb.y*rp.x)+(rb.x*rp.y))/
+          (Math.hypot(-rb.y,rb.x)*Math.hypot(-rb.y,rb.x)); // Projektion auf rb gedreht
+          rph = {x: rhbf*(-rb.y), y: rhbf*(rb.x)}; // Porjektion senkrecht auf rb
+
+        if(rpb.x>0 && rpb.y>0) // Bestimmung von pb
+          pb = Math.hypot(rpb.x,rpb.y);
+        else if (rpb.x<0 && rpb.y<0)
+          pb = -Math.hypot(rpb.x,rpb.y);
+
+        if(rph.x<0 && rph.y>0) // Bestimmung von ph
+          ph = Math.hypot(rph.x,rph.y);
+        else if (rph.x>0 && rph.y<0)
+          ph = -Math.hypot(rph.x,rph.y);
+      }
+      function onbuttondown(e) {  // Funktion beim drücken der Maustaste
+         dirty = true;
+      }
+      function onbuttonup(e) {  // Funktion beim lösen der Maustaste
+         dirty = false;
+      }
+
+      function onmove(e) { // Funktion beim Bewegen der Maus übers Canvas
+        if(dirty) { // Beim gedrückter Maus ausführen
+           x += (e.movementX || e.mozMovementX || e.webkitMovementX || 0); //Verschiebung in x-Richtung
+           y -= (e.movementY || e.mozMovementY || e.webkitMovementY || 0);  //Verschiebung in y-Richtung
+          calcpbph(x,y); // Koppelparameter bestimmen
+          curve.del(); // alte Koppelkurve löschen
+          render(); // Kurbeltrieb neu zeichnen
+        }
+      }
+
+      function render(time) {
+        calc(phi0,pb,ph); // Kurbelpunkte berechnen
+        drwCurve(phi0,pb,ph); // Kooppelkurve zeichnen
+
+        bar
+          .del() // Lösche vorherige Grafik
+          .style({ls:"#666",fs:"#fee",lw:5,lj:"round"}) // Style-Eigenschaften
+          .p() // Polygonzug beginnen
+          .m(rD.x,rD.y) // Gehe zum Punkt D
+          .l(rA.x,rA.y) // Linie zum Punkt A
+          .l(rB.x,rB.y) // Linie zum Punkt B
+          .l(rC.x,rC.y) // Linie zum Punkt C
+          //.m(rA.x,rA.y) // Gehe zum Punkt A
+          //.l(rBP.x,rBP.y) // Linie zum Punkt BP
+          //.l(rP.x,rP.y) // Linie zum Punkt P
+          .stroke() // Rand zeichnen
+          .cir(rD.x,rD.y,8) // Kreis im Punkt D
+          .cir(rA.x,rA.y,8) // Kreis im Punkt A
+          .cir(rB.x,rB.y,8) // Kreis im Punkt B
+          .cir(rC.x,rC.y,8) // Kreis im Punkt C
+          .cir(rP.x,rP.y,8); // Kreis im Punkt P
+
+          g.exe(ctx); // Erstelle die Grafik
+
+        //requestAnimationFrame(render);
+      }
+
+      // Initialisierung der Funktion bei einer Mausaktivität
+      ctx.canvas.addEventListener('mousedown', onbuttondown, false);
+      ctx.canvas.addEventListener('mouseup', onbuttonup, false);
+      ctx.canvas.addEventListener("mousemove", onmove, false);
+
+      calc(phi0,pb,ph); // Kurbelpunkte berechnen
+      x = rP.x, y = rP.y; // x- und y-Startkoordinaten vom Koppelpunkt bestimmen
+      requestAnimationFrame(render); // Kurbeltrieb zeichnen
+
+      </script>
+  </body>
+</html>

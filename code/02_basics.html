@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html >
+  <head>
+    <meta charset="UTF-8">
+    <title>g2 - Grafik erstellen</title>
+  </head>
+
+  <body>
+
+    <canvas id="c" width="601" height="401"></canvas>
+    <script src='../g2.js'></script>
+
+    <script>
+      var ctx = document.getElementById("c").getContext("2d");
+
+      line = g2(); // Linien-Objekt
+      circle = g2(); // Kreis-Objekt
+      g = g2()  // Basis-Element
+          .cartesian() // Kartesische Koordinaten
+          .pan(150,100) // Verschiebung des Ursprungs
+          .grid() // Gitter erzeugen
+          .use(line) // Nutzt Linien-Objekt
+          .use(circle); // Nutzt Kreis-Objekt
+
+      line // Linien-Objekt
+      .style({lw:5,ls:"#27ae60"}) // Linien-Style
+      .p() // Polygonzug beginnen
+      .m(0,150) // Gehe zum Punkt (0,150)
+      .l(150,170) // Linie zum Punkt (150,170)
+      .l(300,150) // Linie zum Punkt (300,150)
+      .stroke();  // Rand zeichnen
+
+      circle // Kreis-Objekt
+      .style({lw:5,ls:"#d35400",fs:"#e67e22"}) // Kreis-Style
+      .cir(20,0,20)    // cir(x,y,r)
+      .cir(280,0,20); // cir(x,y,r)
+
+      g.exe(ctx); // Erstelle die Grafik
+    </script>
+  </body>
+</html>

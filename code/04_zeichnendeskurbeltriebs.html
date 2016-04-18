@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html >
+  <head>
+    <meta charset="UTF-8">
+    <title>g2 - Kurbelschwinge zeichnen</title>
+  </head>
+
+  <body>
+
+    <canvas id="c" width="600" height="400"></canvas>
+    <script src='../g2.js'></script>
+
+      <script>
+        var ctx = document.getElementById("c").getContext("2d");
+        // Eigenschaften des Kurbeltriebs
+        var a=50, b=220, c=120, d=160, phi=120/180*Math.PI;
+        bar = g2(); // Kurbeltrieb
+        g = g2() // Basis-Element
+          .cartesian() // Kartesische Koordinaten
+          .grid() // Gitter erzeugen
+          .pan(180,120) // Verschiebung des Ursprungs
+          .use(bar); // bar-Element nutzen
+
+        rA = {x: a*Math.cos(phi), y: a*Math.sin(phi)}; // Berechnung des Orsvektor rA
+        rC = {x: d, y: 0}; // Berechnung des Orsvektor rC
+        rD = {x: 0, y: 0}; // Berechnung des Orsvektor rD
+        rAC = {x: d-rA.x, y: -rA.y};  // Berechnung des Orsvektor rAC
+        l = Math.hypot(rAC.x,rAC.y); // Länge von rAC
+        cg = (b*b+l*l-c*c)/(2*b*l); // cos gamma
+        sg = Math.sqrt(1-cg*cg); // sin gamma
+        rAC = {x: rAC.x*cg-rAC.y*sg,
+              y: rAC.x*sg+rAC.y*cg}; // Drehen von rAC
+        rb = {x: b/l*rAC.x,
+              y: b/l*rAC.y}; // Länge von rAC auf b normieren
+        rB = {x: rA.x+rb.x, y: rA.y+rb.y}; // Punkt rB = rA+rb
+
+        bar
+          .style({ls:"#666",fs:"#fee",lw:5,lj:"round"}) // Style-Eigenschaften
+          .p() // Polygonzug beginnen
+          .m(rD.x,rD.y) // Gehe zum Punkt D
+          .l(rA.x,rA.y) // Linie zum Punkt A
+          .l(rB.x,rB.y) // Linie zum Punkt B
+          .l(rC.x,rC.y) // Linie zum Punkt C
+          .stroke() // Rand zeichnen
+          .cir(rD.x,rD.y,8) // Kreis im Punkt D
+          .cir(rA.x,rA.y,8) // Kreis im Punkt A
+          .cir(rB.x,rB.y,8) // Kreis im Punkt B
+          .cir(rC.x,rC.y,8); // Kreis im Punkt C
+
+        g.exe(ctx); // Erstelle die Grafik
+      </script>
+
+
+
+
+  </body>
+</html>

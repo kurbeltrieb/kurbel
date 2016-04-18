@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html >
+  <head>
+    <meta charset="UTF-8">
+    <title>g2 - Gangpolbahn animieren</title>
+  </head>
+
+  <body>
+
+    <canvas id="c" width="601" height="801"></canvas>
+    <script src='../g2.js'></script>
+
+      <script>
+        var ctx = document.getElementById("c").getContext("2d");
+        // Eigenschaften des Kurbeltriebs
+        var a=50, b=220, c=120, d=180, phi=90/180*Math.PI, n=0.1;
+        // Variablen für Rastpolbahn
+        var lambdaA, lambdaC, rlA=[], rlC=[], rlR=[],rR=[], rRold,rG=[];
+        // Variablen für Gangpolbahn
+        var gamma, cg, sg, rgset=[],rGP=[];
+        bar = g2(); // Kurbeltrieb
+        moment = g2(); // Momentanpol
+        rast = g2(); // Rastpolbahn
+        gang = g2(); // Gangpolbahn
+        g = g2() // Basis-Element
+          .cartesian() // Kartesische Koordinaten
+          .clr() // Lösche alte Elemente
+          .grid()  // Gitter erzeugen
+          .use(rast) // rast-Element nutzen
+          .use(gang) // gang-Element nutzen
+          .use(moment) // moment-Element nutzen
+          .use(bar) // bar-Element nutzen
+          .pan(450,800) // Verschiebung des Ursprungs
+          .zoom(0.5,0,0); // Zoom heraus
+
+        function calcMoment() { // Berechnung des Momentanpol
+          lambdaC = d/(d-rB.x+rB.y/rA.y*rA.x);
+          rlC = {x: d+lambdaC*(rB.x-d), y: lambdaC*rB.y}; // Schnittpunkt
+          lambdaA = lambdaC*rB.y/rA.y;
+          rlA = {x: lambdaA*rA.x,y: lambdaA*rA.y}; // Schnittpunkt
+        }
+
+        function calc(phi,pb,ph) { // Berechung der Punkte
+          // Berechnung der Orsvektoren
+          rA = {x: a*Math.cos(phi), y: a*Math.sin(phi)}; // Berechnung des Orsvektor rA
+          rC = {x: d, y: 0}; // Berechnung des Orsvektor rC
+          rD = {x: 0, y: 0}; // Berechnung des Orsvektor rD
+          rAC = {x: d-rA.x, y: -rA.y}; // Berechnung des Hilfsvektor rD
+          lenrAC = Math.hypot(rAC.x,rAC.y);
+          cg = (b*b+lenrAC*lenrAC-c*c)/(2*b*lenrAC); // cos gamma
+          sg = Math.sqrt(1-cg*cg); // sin gamma
+          rb = {x: b/lenrAC*(rAC.x*cg-rAC.y*sg),
+            y: b/lenrAC*(rAC.x*sg+rAC.y*cg)}; // Gliedvektor von GLied b
+          rB = {x: rA.x+rb.x, y: rA.y+rb.y}; // Ortsvektor zum Punkt B
+
+          // Berechnung von Punkt P
+          lenrs = Math.hypot(pb,ph);
+          s = Math.atan2(ph,pb); // sigma
+          cs = Math.cos(s); // cos sigma
+          ss = Math.sin(s); // sin sigma
+          rp = {x: lenrs/b*(rb.x*cs-rb.y*ss),
+            y: lenrs/b*(rb.x*ss+rb.y*cs)}; // Berechnung von Glied p
+          rbp = {x:((rb.x*rp.x+rb.y*rp.y)/(b*b))*rb.x,
+                 y:((rb.x*rp.x+rb.y*rp.y)/(b*b))*rb.y};
+          rBP = {x:rA.x+rbp.x,y:rA.y+rbp.y};  // Ortsvektor Punkt BP
+          rP = {x: rA.x+rp.x, y: rA.y+rp.y}; // Ortsvektor Punkt P
+        }
+
+        function calcRast() {      // Rastpolbahn
+          var u = 0;
+          for (phiR=0;phiR<360;phiR+=2) { // Durchlaufen aller Winkelgradstellung in 2 Gradschritten
+          calc(phiR/180*Math.PI); // Gelenkpunkte bestimmen
+          lambdaC = d/(d-rB.x+rB.y/rA.y*rA.x); // Schnittpunkt berechnen
+          rlR.push({x: d+lambdaC*(rB.x-d), y: lambdaC*rB.y});
+          lambdaA = lambdaC*rB.y/rA.y; // Schnittpunkt berechnen
+          rlA.push({x: lambdaA*rA.x, y: lambdaA*rA.y}); // Schnittpunkt
+          rR.push({x: rlA[u].x, y: rlA[u].y}); // Speichern in Array
+          u++;
+          }
+        }
+
+        function calcGang() {     // Gangpolbahn
+          for(var j=0; j<=360; j+=0.5) { // Durchlaufen aller Winkelgradstellung in 0.5 Gradschritten
+            phiG = j/180*Math.PI;
+            calc(phiG);  // Gelenkpunkte bestimmen
+            calcMoment(); // Momentanpol bestimmen
+            rg = {x:rlC.x-rA.x, y:rlC.y-rA.y}; // rg-Vektor vom Momentanpol zu rA
+            lenrg = Math.hypot(rg.x,rg.y); // Länge des Hilfsvektors rg
+            // Cosinus und Sinus von rg zu rb bestimmen
+            cg = (rg.x*rb.x+rg.y*rb.y)/(Math.hypot(rg.x,rg.y)*Math.hypot(rb.x,rb.y));
+            if(lambdaC>1)
+              sg = Math.sqrt(1-cg*cg);
+            else
+              sg = -Math.sqrt(1-cg*cg);
+
+            rgset.push({lenrg: lenrg, cg: cg, sg: sg}); // Speichern der Polarkoordinaten
+          }
+        }
+
+        function render(time) {
+          t = time / 1000; // Zeit in Sek.
+          phi = 2*Math.PI*t*n
+          calc(phi); // Kurbeltrieb berechnen
+          calcMoment(); // Momentanpol berechnen
+
+          moment
+            .del() // Lösche vorherige Grafik
+            .style({ls:"#666",fs:"#fee",ld:[12,6],lw:3}) // Style-Eigenschaften
+            .p() // Polygonzug beginnen
+            .m(rA.x,rA.y) // Gege zum Punkt A
+            .l(rlA.x,rlA.y) // Linie zum Schnittpunkt
+            .m(rC.x,rC.y) // Gehe zum Punkt C
+            .l(rlC.x,rlC.y) // Linie zum Schnittpunkt
+            .stroke() // Zeichne Ränder
+            .style({ls:"red",fs:"red",ld:[1],lw:0.1}) // Style-Eigenschaften
+            .cir(rlC.x,rlC.y,10); // roter Kreis im Schnittpunkt
+
+          rast
+            .del() // Lösche vorherige Grafik
+            .style({ls:"#16a085",ld:[6,6],lw:2}) // Style-Eigenschaften
+            .p() // Polygonzug beginnen
+            .m(rR[0].x,rR[0].y); // Gehe zum ersten Punkt im Array rR
+            rRold = {x: rR[0].x,y: rR[0].y}; // Alter Wert
+            for(var u=1; u<rR.length; u++) { // Durchlaufe das ganze Array
+              if(Math.hypot(rR[u].x-rRold.x,rR[u].y-rRold.y)<400) { // Wenn Abstand von Punkten größer 400 Pixel keine Linie zeichnen
+                rast.l(rR[u].x,rR[u].y);
+              }else {
+                rast.m(rR[u].x,rR[u].y);
+              }
+              rRold = {x: rR[u].x,y: rR[u].y}; // Aktuellen Wert zwischenspeichern
+            }
+            rast.stroke(); // Rand zeichnen
+
+          gang // Gangpolbahn
+            .del() // Lösche vorherige Grafik
+            .p() // Polygonzug beginnen
+            .style({ls:"red",ld:[1],lw:2}); // Style-Eigenschaften
+            rGold = {x:0,y:0} // Anfangswert
+            for(var j=0;j<rgset.length;j++) { // Durchlaufe rgset
+              rGP = {x: rgset[j].lenrg/b*(rb.x*rgset[j].cg-rb.y*rgset[j].sg)+rA.x,
+                    y: rgset[j].lenrg/b*(rb.x*rgset[j].sg+rb.y*rgset[j].cg)+rA.y};
+                    // Berechne Koordinaten ins kartesische System
+              if(Math.hypot(rGP.x-rGold.x,rGP.y-rGold.y)<1000) {
+                gang.l(rGP.x,rGP.y);
+              }else {
+                gang.m(rGP.x,rGP.y);
+              }
+              rGold = {x:rGP.x,y:rGP.x}
+            }
+          gang.stroke();  // Rand zeichnen
+
+          bar.del()
+            .style({ls:"#666",fs:"#fee",lw:5})
+            .p() // Polygonzug beginnen
+            .m(rD.x,rD.y) // Gehe zum Punkt D
+            .l(rA.x,rA.y) // Linie zum Punkt A
+            .l(rB.x,rB.y) // Linie zum Punkt B
+            .l(rC.x,rC.y) // Linie zum Punkt C
+            .stroke() // Rand zeichnen
+            .cir(rD.x,rD.y,8) // Kreis im Punkt D
+            .cir(rA.x,rA.y,8) // Kreis im Punkt A
+            .cir(rB.x,rB.y,8) // Kreis im Punkt B
+            .cir(rC.x,rC.y,8); // Kreis im Punkt C
+
+            g.exe(ctx); // Erstelle die Grafik
+
+          requestAnimationFrame(render); // render-Funktion neu aufrufen
+        }
+
+        // Rastpolbahn
+        calcRast();
+        calcGang();
+        requestAnimationFrame(render); // render-Funktion aufrufen
+
+      </script>
+
+
+
+
+  </body>
+</html>

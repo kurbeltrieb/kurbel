@@ -399,6 +399,7 @@ function drwCurve(phi0,pb,ph) { // Zeichnen der Koppelkurvve
 
 ## 8. Koppelkurve animieren
 ![Koppelkurve animieren](./img/08_koppelanimieren.gif "Koppelkurve animieren" )
+
 Möchten wir nun unsere Koppelkurve animieren, müssen wir zunächst den Kurbelwinkel wieder in Abhängigkeit von der Zeit in unserer ```render(time) { ... }```-Funktion berechnen und die Animation mit dem Auskommentieren von ```requestAnimationFrame(render);``` wieder starten.
 
 ## 9. Koppelkurve interaktiv
@@ -463,12 +464,7 @@ requestAnimationFrame(render); // Kurbeltrieb zeichnen
 
 ![Momentanpol zeichnen](./img/10_momentanpolzeichnen.gif "Momentanpol zeichnen" )
 
-In der Getriebelehre hat der Momentanpol eine große Bedeutung. Um diesen Punkt mit der g2-Bibliothek zu zeichnen, benötigt es nun nicht viel. Wir nutzen dazu unseren Code aus Kapitel xxx. Wir entfernen zunächst die ```drwCurve()```-Funktion, da wir diese nun nicht mehr benötigen. Stattdessen möchten wir nun den Momentanpol in einer ```calcMoment()```-Funktion berechnen.
-
-Die mathematische Herleitung stelle ich wieder als Video zur Verfügung.
- VIDEO
-
-Daraus folgt, dass unsere Funktion wie folgt aufgebaut ist.
+In der Getriebelehre hat der Momentanpol eine große Bedeutung. Um diesen Punkt mit der g2-Bibliothek zu zeichnen, benötigt es nun nicht viel. Wir nutzen dazu unseren Code aus Kapitel xxx. Wir entfernen zunächst die ```drwCurve()```-Funktion, da wir diese nun nicht mehr benötigen. Stattdessen möchten wir nun den Momentanpol in einer ```calcMoment()```-Funktion berechnen. Dazu berechnen wir den Schnittpunkt der Vektoren rA und rC. Daraus folgt, dass unsere Funktion wie folgt aufgebaut ist.
 
 ```javascript
 function calcMoment() { // Berechnung des Momentanpol
@@ -593,7 +589,7 @@ Anschließend zeichnen wir den Polygonzug, dazu müssen wir jeden Punkt der Gang
 
 ## 14. Gangpolbahn animieren
 
-![Koppelkurve interaktiv](./img/13_gangpolbahnzeichnen.gif "Koppelkurve interaktiv" )
+![Koppelkurve interaktiv](./img/14_gangpolbahnanimieren.gif "Koppelkurve interaktiv" )
 
 Möchten wir nun die Gangpolbahn animieren müssen wir nur wieder den Winkel ```phi``` in Abhängigkeit von der Zeit berechnen und die Animation durch Auskommentieren von ```requestAnimationFrame(render);``` wieder starten.
 

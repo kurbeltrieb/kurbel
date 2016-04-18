@@ -589,7 +589,7 @@ Anschließend zeichnen wir den Polygonzug, dazu müssen wir jeden Punkt der Gang
 
 ## 14. Gangpolbahn animieren
 
-![Koppelkurve interaktiv](./img/14_gangpolbahnzeichnen.gif "Koppelkurve interaktiv" )
+![Ganpolbahn animieren](./img/14_gangpolbahnanimieren.gif "Koppelkurve interaktiv" )
 
 Möchten wir nun die Gangpolbahn animieren müssen wir nur wieder den Winkel ```phi``` in Abhängigkeit von der Zeit berechnen und die Animation durch Auskommentieren von ```requestAnimationFrame(render);``` wieder starten.
 
